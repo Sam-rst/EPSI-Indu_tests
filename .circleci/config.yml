@@ -1,115 +1,151 @@
+# .circleci/config.yml
 version: 2.1
-
 orbs:
   node: circleci/node@5
-
-executors:
-  node-executor:
-    docker:
-      - image: circleci/node:18-browsers
-
 jobs:
   build:
-    executor: node-executor
+    executor: node/default
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: npm
       - run:
-          name: Code Analysis
-          command: echo "Running static code analysis..."
+          name: Install dependencies
+          command: npm install --save
       - run:
-          name: Cleanup & Packaging
-          command: echo "Cleaning and packaging the application..."
-      - persist_to_workspace:
-          root: .
-          paths:
-            - node_modules
-            - .next
+          name: Run linter
+          command: npm run lint
+      - run:
+          name: Clean and package
+          command: echo "Cleaning and packaging..."
 
-  test:
-    executor: node-executor
+  tests:
+    executor: node/default
+    environment:
+      JEST_JUNIT_OUTPUT_DIR: ./test-results/
     steps:
       - checkout
-      - attach_workspace:
-          at: .
+      - node/install-packages:
+          pkg-manager: npm
       - run:
-          name: Unit Tests
-          command: echo "Running unit tests..."
+          command: npm install jest-junit
       - run:
-          name: Integration Tests
-          command: echo "Running integration tests..."
-      - run:
-          name: Regression Tests
-          command: echo "Running regression tests..."
-      - run:
-          name: Performance Tests
-          command: echo "Running performance tests..."
-      - run:
-          name: Security Tests
-          command: echo "Running security tests..."
-      - run:
-          name: Compatibility Tests
-          command: echo "Running compatibility tests..."
-      - run:
-          name: Accessibility Tests
-          command: echo "Running accessibility tests..."
+          name: Run unit tests
+          command: npm run test:ci
       - store_test_results:
           path: ./test-results/
+      - run:
+          name: Run integration tests
+          command: echo "Running integration tests..."
+      - run:
+          name: Run regression tests
+          command: echo "Running regression tests..."
+      - run:
+          name: Run performance tests
+          command: echo "Running performance tests..."
+      - run:
+          name: Run security tests
+          command: echo "Running security tests..."
+      - run:
+          name: Run compatibility tests
+          command: echo "Running compatibility tests..."
+      - run:
+          name: Run accessibility tests
+          command: echo "Running accessibility tests..."
 
   deploy:
     parameters:
       environment:
         type: string
-    executor: node-executor
+    executor: node/default
     steps:
       - checkout
       - run:
-          name: Prepare Deployment
+          name: Prepare Deployment Environment
           command: echo "Preparing deployment for <<parameters.environment>>..."
       - run:
-          name: Deploying
-          command: echo "Deploying to <<parameters.environment>> environment..."
+          name: Deploy Application
+          command: echo "Deploying application to <<parameters.environment>> environment..."
       - run:
-          name: Post-Deployment Tests
-          command: echo "Running verification and validation tests..."
+          name: Run Verification Tests
+          command: echo "Running verification tests..."
       - run:
-          name: Monitoring
-          command: echo "Starting monitoring process..."
+          name: Run Functional Validation Tests
+          command: echo "Running functional validation tests..."
+      - run:
+          name: Run Load Tests
+          command: echo "Running load tests..."
+      - run:
+          name: Final Deployment Step
+          command: echo "Finalizing deployment to <<parameters.environment>>..."
+      - run:
+          name: Monitoring and Follow-up
+          command: echo "Starting monitoring and follow-up process..."
 
 workflows:
   version: 2
-  ci-pipeline:
+
+  feature-hotfix:
     jobs:
       - build:
           filters:
             branches:
-              ignore:
+              only:
                 - /^feature\/.*/
                 - /^hotfix\/.*/
-      - test:
+      - tests:
+          requires:
+            - build
+
+  development:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: develop
+      - tests:
           requires:
             - build
       - deploy:
           name: deploy_dev
           requires:
-            - test
+            - tests
           filters:
             branches:
               only: develop
           environment: development
+
+  integration:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: integration
+      - tests:
+          requires:
+            - build
       - deploy:
           name: deploy_int
           requires:
-            - test
+            - tests
           filters:
             branches:
               only: integration
           environment: integration
+
+  production:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: main
+      - tests:
+          requires:
+            - build
       - deploy:
           name: deploy_prod
           requires:
-            - test
+            - tests
           filters:
             branches:
               only: main
