@@ -40,4 +40,50 @@ yarn test
 pnpm test
 ```
 
+## Docker Support
+
+### Using Docker Compose (Recommended)
+
+To run the application in development mode with hot reload:
+
+```bash
+docker compose up app
+```
+
+To run the tests:
+
+```bash
+docker compose run test
+```
+
+To stop all containers:
+
+```bash
+docker compose down
+```
+
+### Using Docker Directly
+
+To build the Docker image, run:
+
+```bash
+docker build -t nextjs-jest-app .
+```
+
+### Running the Container
+
+To run the application in a Docker container:
+
+```bash
+docker run -p 3000:3000 nextjs-jest-app
+```
+
+### Running Tests in Docker
+
+To run tests in the Docker container:
+
+```bash
+docker run nextjs-jest-app npm test
+```
+
 Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example) ([Documentation](https://nextjs.org/docs/deployment)).
