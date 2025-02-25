@@ -51,10 +51,10 @@ test("Division fonctionne correctement", () => {
     const button = screen.getByText("Calculer");
     const result = screen.getByText(/Résultat/i);
     fireEvent.change(inputA, { target: { value: "6" } });
-    fireEvent.change(inputB, { target: { value: "2" } });
+    fireEvent.change(inputB, { target: { value: "3" } });
     fireEvent.change(select, { target: { value: "/" } });
     fireEvent.click(button);
-    expect(result).toHaveTextContent("3");
+    expect(result).toHaveTextContent("2");
 });
 
 test("Division par 0 renvoie bien 'Error : Division par zéro' fonctionne correctement", () => {
