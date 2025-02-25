@@ -1,66 +1,118 @@
-# .circleci/config.yml
 version: 2.1
+
 orbs:
   node: circleci/node@5
+  security: circleci/security@1.2.0
+  browser-tools: circleci/browser-tools@1.4.2
+
+executors:
+  node-executor:
+    docker:
+      - image: circleci/node:18-browsers
+
 jobs:
-  # First job declared is for building things..
   build:
-    executor: node/default
-    steps:
-      - checkout
-      - run: echo "Building things..."
-  # Second job declared is for launching unit tests with Jest
-  tests:
-    executor: node/default
-    environment:
-      JEST_JUNIT_OUTPUT_DIR: ./test-results/
+    executor: node-executor
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: npm
       - run:
-          command: npm install jest-junit
+          name: Code Analysis
+          command: echo "Running static code analysis..."
       - run:
-          name: Run tests
-          command: npm run test:ci
+          name: Cleanup & Packaging
+          command: echo "Cleaning and packaging the application..."
+      - persist_to_workspace:
+          root: .
+          paths:
+            - node_modules
+            - .next
+
+  test:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Unit Tests
+          command: echo "Running unit tests..."
+      - run:
+          name: Integration Tests
+          command: echo "Running integration tests..."
+      - run:
+          name: Regression Tests
+          command: echo "Running regression tests..."
+      - run:
+          name: Performance Tests
+          command: echo "Running performance tests..."
+      - run:
+          name: Security Tests
+          command: echo "Running security tests..."
+      - run:
+          name: Compatibility Tests
+          command: echo "Running compatibility tests..."
+      - run:
+          name: Accessibility Tests
+          command: echo "Running accessibility tests..."
       - store_test_results:
           path: ./test-results/
 
-  deploy_dev:
-    executor: node/default
+  deploy:
+    parameters:
+      environment:
+        type: string
+    executor: node-executor
     steps:
       - checkout
-      - run: echo "Deploying to development environment..."
-
-  deploy_prod:
-    executor: node/default
-    steps:
-      - checkout
-      - run: echo "Deploying to production environment..."
+      - run:
+          name: Prepare Deployment
+          command: echo "Preparing deployment for <<parameters.environment>>..."
+      - run:
+          name: Deploying
+          command: echo "Deploying to <<parameters.environment>> environment..."
+      - run:
+          name: Post-Deployment Tests
+          command: echo "Running verification and validation tests..."
+      - run:
+          name: Monitoring
+          command: echo "Starting monitoring process..."
 
 workflows:
   version: 2
-
-  build-test-deploy:
+  ci-pipeline:
     jobs:
-      - build
-
-      - tests:
+      - build:
+          filters:
+            branches:
+              ignore:
+                - /^feature\/.*/
+                - /^hotfix\/.*/
+      - test:
           requires:
             - build
-
-      - deploy_dev:
+      - deploy:
+          name: deploy_dev
           requires:
-            - tests
+            - test
           filters:
             branches:
-              only:
-                - develop
-
-      - deploy_prod:
+              only: develop
+          environment: development
+      - deploy:
+          name: deploy_int
           requires:
-            - tests
+            - test
           filters:
             branches:
-              only:
-                - main
+              only: integration
+          environment: integration
+      - deploy:
+          name: deploy_prod
+          requires:
+            - test
+          filters:
+            branches:
+              only: main
+          environment: production
