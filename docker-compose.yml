@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: development
     ports:
       - "3000:3000"
     volumes:
@@ -19,7 +20,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: development
     command: npm test
     volumes:
       - .:/app
       - /app/node_modules
+
+  prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
