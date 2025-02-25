@@ -56,6 +56,12 @@ To run the tests:
 docker compose run test
 ```
 
+To run in production mode:
+
+```bash
+docker compose up prod
+```
+
 To stop all containers:
 
 ```bash
@@ -64,26 +70,42 @@ docker compose down
 
 ### Using Docker Directly
 
-To build the Docker image, run:
+To build the Docker image for development:
 
 ```bash
-docker build -t nextjs-jest-app .
+docker build --target development -t nextjs-jest-app:dev .
+```
+
+To build the Docker image for production:
+
+```bash
+docker build --target production -t nextjs-jest-app:prod .
 ```
 
 ### Running the Container
 
-To run the application in a Docker container:
+For development (with hot reload):
 
 ```bash
-docker run -p 3000:3000 nextjs-jest-app
+docker run -p 3000:3000 -v $(pwd):/app nextjs-jest-app:dev npm run dev
+```
+
+For production:
+
+```bash
+docker run -p 3000:3000 nextjs-jest-app:prod
 ```
 
 ### Running Tests in Docker
 
-To run tests in the Docker container:
-
 ```bash
-docker run nextjs-jest-app npm test
+docker run nextjs-jest-app:dev npm test
 ```
+
+The application uses a multi-stage Dockerfile with three stages:
+
+- `development`: For development and testing with all dependencies
+- `builder`: For building the application
+- `production`: Optimized production image with minimal dependencies
 
 Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example) ([Documentation](https://nextjs.org/docs/deployment)).
