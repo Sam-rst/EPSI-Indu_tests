@@ -85,17 +85,47 @@ jobs:
 workflows:
   version: 2
 
-  feature-hotfix:
+  feature:
     jobs:
       - build:
           filters:
             branches:
               only:
-                - /^feature\/.*/
-                - /^hotfix\/.*/
+                - /^feature\/.*
+
       - tests:
           requires:
             - build
+
+  hotfix:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only:
+                - /^hotfix\/.*/
+
+      - tests:
+          requires:
+            - build
+
+      - deploy:
+          name: deploy_hotfix_dev
+          requires:
+            - tests
+          filters:
+            branches:
+              only: develop
+          environment: development
+
+      - deploy:
+          name: deploy_hotfix_prod
+          requires:
+            - tests
+          filters:
+            branches:
+              only: main
+          environment: production
 
   development:
     jobs:
@@ -136,19 +166,14 @@ workflows:
               only: integration
           environment: integration
 
-  production:
+  production: # Not necessary to tests in production because we have already tested in other environments
     jobs:
       - build:
           filters:
             branches:
               only: main
-      - tests:
-          requires:
-            - build
       - deploy:
           name: deploy_prod
-          requires:
-            - tests
           filters:
             branches:
               only: main
