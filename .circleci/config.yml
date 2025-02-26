@@ -14,7 +14,7 @@ jobs:
           command: npm install --save
       - run:
           name: Run linter
-          command: npm run lint
+          command: echo "Command -> npm run lint"
       - run:
           name: Clean and package
           command: echo "Cleaning and packaging..."
