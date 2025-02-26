@@ -1,6 +1,6 @@
-import { NextRequest } from "next/server";
 import { GET, POST } from "./route"; // Import des handlers de la route
 import httpMocks from "node-mocks-http";
+
 jest.mock("next/server", () => ({
     NextResponse: {
         json: jest.fn((data) => ({ json: data, status: 200 })),

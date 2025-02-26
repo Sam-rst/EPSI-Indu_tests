@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
-let history: { a: number; b: number; operator: string; result: number | string }[] = [];
+const history: { a: number; b: number; operator: string; result: number | string }[] = [];
 
 export async function GET() {
     return NextResponse.json(history);
@@ -19,8 +19,8 @@ export async function POST(req: NextRequest) {
 
         history.push({ a, b, operator, result });
         return NextResponse.json({ success: true, status: 200, data: history });
-    } catch (error) {
-        return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    } catch (e) {
+        return NextResponse.json({ error: e }, { status: 400 });
     }
 }
 
