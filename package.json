@@ -6,7 +6,7 @@
     "start": "next start",
     "test": "jest --watch",
     "test:ci": "jest --ci",
-    "lint": "eslint ./app --ext .ts,.tsx"
+    "lint": "eslint app pages --ext .ts,.tsx"
   },
   "dependencies": {
     "next": "latest",
