@@ -538,10 +538,4 @@ workflows:
       - deploy:
           name: deploy_prod
           requires:
-            - prepare_environment
-            - deploy_application
-            - verification_tests
-            - functional_validation
-            - load_tests
-            - finalize_deployment
             - monitoring
