@@ -77,7 +77,7 @@ docker compose down
 - Première version
 
 Les branches main, develop et integration sont protégées. Les pull requests sont obligatoires pour merger une branche dans une autre. Les tests sont lancés à chaque push sur les branches main, develop et integration. Donc possède le même workflow.
-![Config_production_old](docs/img/config_production_old.png)
+![Config_production_old](docs/img/prod_pipeline.png)
 
 - Seconde version
 
