@@ -386,7 +386,6 @@ workflows:
           name: deploy_dev
           requires:
             - tests
-          environment: development # Déploiement sur un environnement de dev après validation
 
 
 
@@ -449,10 +448,6 @@ workflows:
           name: deploy_int
           requires:
             - tests
-          filters:
-            branches:
-              only: integration
-          environment: integration # Déploiement dans l’environnement d’intégration pour validation finale
 
 
 
