@@ -91,11 +91,15 @@ workflows:
           filters:
             branches:
               only:
-                - /^feature\/.*
+                - /^feature\/.*/
 
       - tests:
           requires:
             - build
+          filters:
+            branches:
+              only:
+                - /^feature\/.*/
 
   hotfix:
     jobs:
@@ -108,6 +112,10 @@ workflows:
       - tests:
           requires:
             - build
+          filters:
+            branches:
+              only:
+                - /^hotfix\/.*/
 
   development:
     jobs:
