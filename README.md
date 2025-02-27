@@ -32,17 +32,9 @@ pnpm create next-app --example with-jest with-jest-app
 npm test
 ```
 
-```bash
-yarn test
-```
-
-```bash
-pnpm test
-```
-
 ## Docker Support
 
-### Using Docker Compose (Recommended)
+### Using Docker Compose
 
 To run the application in development mode with hot reload:
 
@@ -68,44 +60,54 @@ To stop all containers:
 docker compose down
 ```
 
-### Using Docker Directly
+## Documentation
 
-To build the Docker image for development:
+### GitFlow
 
-```bash
-docker build --target development -t nextjs-jest-app:dev .
-```
+#### Branches
 
-To build the Docker image for production:
+- `main` : branche principale du projet
+- `integration` : branche d'intégration (ou de tests)
+- `develop` : branche de développement
+- `feature/` : branche de fonctionnalité
+- `hotfix/` : branche de correction de bug
 
-```bash
-docker build --target production -t nextjs-jest-app:prod .
-```
+#### Main (Workflow)
 
-### Running the Container
+- Première version
 
-For development (with hot reload):
+Les branches main, develop et integration sont protégées. Les pull requests sont obligatoires pour merger une branche dans une autre. Les tests sont lancés à chaque push sur les branches main, develop et integration. Donc possède le même workflow.
+![Config_production_old](docs/img/config_production_old.png)
 
-```bash
-docker run -p 3000:3000 -v $(pwd):/app nextjs-jest-app:dev npm run dev
-```
+- Seconde version
 
-For production:
+![Config_production](docs/img/config_production.png)
 
-```bash
-docker run -p 3000:3000 nextjs-jest-app:prod
-```
+#### Integration (Workflow)
 
-### Running Tests in Docker
+![Workflow_int](docs/img/integration_pipeline.png)
 
-```bash
-docker run nextjs-jest-app:dev npm test
-```
+#### Développement (Workflow)
 
-The application uses a multi-stage Dockerfile with three stages:
+![Workflow_dev](docs/img/develop_pipeline.png)
 
-- `development`: For development and testing with all dependencies
-- `builder`: For building the application
-- `production`: Optimized production image with minimal dependencies
+#### Feature (Workflow)
 
-Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example) ([Documentation](https://nextjs.org/docs/deployment)).
+![Workflow_feat](docs/img/feature_pipeline.png)
+
+#### Hotfix (Workflow)
+
+![Workflow_hotfix](docs/img/hotfix_pipeline.png)
+
+### Analyses de performance
+
+#### 1ère configuration
+
+La config développée en premier ([config.old.yml](.circleci/config.old.yml)) permettait de faire une pipeline optimisée car demande moins de requires entre chaque étape de chaque workflow, qui sont regroupées dans un seul job avec différentes étapes. Ce qui équivaut à 45s de CI.
+![Config_production_old](docs/img/config_production_old.png)
+
+#### 2nd configuration
+
+La config effectuée en second ([config.yml](.circleci/config.yml)) permet de faire une pipeline plus lisible et plus facile à maintenir. Cependant, elle demande plus de requires entre chaque étape de chaque workflow, qui sont regroupées dans un seul job avec différentes étapes. Ce qui équivaut à 2m45s de CI (300% de temps en plus en général).
+![Config_production](docs/img/config_production.png)
+![Config_production](docs/img/temps_config2.png)

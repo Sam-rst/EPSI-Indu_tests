@@ -1,20 +1,9 @@
 # .circleci/config.yml
 version: 2.1
-
 orbs:
-  node: circleci/node@5 # Utilisation de l'orbe Node pour simplifier la gestion de l'exécuteur et des dépendances.
-
+  node: circleci/node@5
 jobs:
-  branch_name:
-    executor: node/default
-    steps:
-      - checkout
-      - run:
-          name: Display branch name
-          command: echo "Branch name is $CIRCLE_BRANCH"
-
-# ===========BUILD================ #
-  install_dependencies:
+  build:
     executor: node/default
     steps:
       - checkout
@@ -23,120 +12,48 @@ jobs:
       - run:
           name: Install dependencies
           command: npm install --save
-
-  run_linter:
-    executor: node/default
-    steps:
-      - checkout
-      - node/install-packages:
-          pkg-manager: npm
       - run:
           name: Run linter
           command: npm run lint
-
-  clean_and_package:
-    executor: node/default
-    steps:
-      - checkout
-      - node/install-packages:
-          pkg-manager: npm
       - run:
           name: Clean and package
           command: echo "Cleaning and packaging..."
 
-  build:
+  tests:
     executor: node/default
-    steps:
-      - run:
-          name: Orchestrating all build jobs
-          command: echo "Build process completed successfully."
-
-# ===========TESTS================ #
-  unit_tests:
-    executor: node/default
+    environment:
+      JEST_JUNIT_OUTPUT_DIR: ./test-results/
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: npm
       - run:
-          name: Install JUnit Reporter
           command: npm install jest-junit
       - run:
           name: Run unit tests
           command: npm run test:ci
       - store_test_results:
           path: ./test-results/
-
-  integration_tests:
-    executor: node/default
-    steps:
-      - checkout
-      - node/install-packages:
-          pkg-manager: npm
       - run:
           name: Run integration tests
           command: echo "Running integration tests..."
-
-  regression_tests:
-    executor: node/default
-    steps:
-      - checkout
-      - node/install-packages:
-          pkg-manager: npm
       - run:
           name: Run regression tests
           command: echo "Running regression tests..."
-
-  performance_tests:
-    executor: node/default
-    steps:
-      - checkout
-      - node/install-packages:
-          pkg-manager: npm
       - run:
           name: Run performance tests
           command: echo "Running performance tests..."
-
-  security_tests:
-    executor: node/default
-    steps:
-      - checkout
-      - node/install-packages:
-          pkg-manager: npm
       - run:
           name: Run security tests
           command: echo "Running security tests..."
-
-  compatibility_tests:
-    executor: node/default
-    steps:
-      - checkout
-      - node/install-packages:
-          pkg-manager: npm
       - run:
           name: Run compatibility tests
           command: echo "Running compatibility tests..."
-
-  accessibility_tests:
-    executor: node/default
-    steps:
-      - checkout
-      - node/install-packages:
-          pkg-manager: npm
       - run:
           name: Run accessibility tests
           command: echo "Running accessibility tests..."
 
-  tests:
-    executor: node/default
-    steps:
-      - run:
-          name: Orchestrating all test jobs
-          command: echo "Triggering all tests in parallel..."
-
-
-# ===========DEPLOY================ #
-  prepare_environment:
+  deploy:
     parameters:
       environment:
         type: string
@@ -146,396 +63,123 @@ jobs:
       - run:
           name: Prepare Deployment Environment
           command: echo "Preparing deployment for <<parameters.environment>>..."
-
-  deploy_application:
-    parameters:
-      environment:
-        type: string
-    executor: node/default
-    steps:
-      - checkout
       - run:
           name: Deploy Application
           command: echo "Deploying application to <<parameters.environment>> environment..."
-
-  verification_tests:
-    executor: node/default
-    steps:
-      - checkout
       - run:
           name: Run Verification Tests
           command: echo "Running verification tests..."
-
-  functional_validation:
-    executor: node/default
-    steps:
-      - checkout
       - run:
           name: Run Functional Validation Tests
           command: echo "Running functional validation tests..."
-
-  load_tests:
-    executor: node/default
-    steps:
-      - checkout
       - run:
           name: Run Load Tests
           command: echo "Running load tests..."
-
-  finalize_deployment:
-    parameters:
-      environment:
-        type: string
-    executor: node/default
-    steps:
-      - checkout
       - run:
           name: Final Deployment Step
           command: echo "Finalizing deployment to <<parameters.environment>>..."
-
-  monitoring:
-    parameters:
-      environment:
-        type: string
-    executor: node/default
-    steps:
-      - checkout
       - run:
           name: Monitoring and Follow-up
           command: echo "Starting monitoring and follow-up process..."
-
-  deploy:
-    executor: node/default
-    steps:
-      - run:
-          name: Orchestrating all deployment jobs
-          command: echo "Deployment process completed successfully."
 
 workflows:
   version: 2
 
   feature:
     jobs:
-      - branch_name:
+      - build:
           filters:
             branches:
-              only: /^feature\/.*/ # Les branches feature sont dédiées aux nouvelles fonctionnalités et n'ont donc pas besoin d'être déployées
-      # ===========BUILD================ #
-      - install_dependencies:
-          requires:
-            - branch_name
-      - run_linter:
-          requires:
-            - branch_name
-      - clean_and_package:
-          requires:
-            - branch_name
-      - build:
-          requires:
-            - install_dependencies
-            - run_linter
-            - clean_and_package
+              only:
+                - /^feature\/.*
 
-      # ===========TESTS================ #
-      - unit_tests:
-          requires:
-            - build
-      - integration_tests:
-          requires:
-            - build
-      - regression_tests:
-          requires:
-            - build
-      - performance_tests:
-          requires:
-            - build
-      - security_tests:
-          requires:
-            - build
-      - compatibility_tests:
-          requires:
-            - build
-      - accessibility_tests:
-          requires:
-            - build
       - tests:
           requires:
-            - unit_tests
-            - integration_tests
-            - regression_tests
-            - performance_tests
-            - security_tests
-            - compatibility_tests
-            - accessibility_tests
-
-
+            - build
 
   hotfix:
     jobs:
-      - branch_name:
+      - build:
           filters:
             branches:
-              only: /^hotfix\/.*/ # Les branches hotfix permettent des corrections critiques directement en production
-      # ===========BUILD================ #
-      - install_dependencies:
-          requires:
-            - branch_name
-      - run_linter:
-          requires:
-            - branch_name
-      - clean_and_package:
-          requires:
-            - branch_name
-      - build:
-          requires:
-            - install_dependencies
-            - run_linter
-            - clean_and_package
-
-      # ===========TESTS================ #
-      - unit_tests:
-          requires:
-            - build
-      - integration_tests:
-          requires:
-            - build
-      - regression_tests:
-          requires:
-            - build
-      - performance_tests:
-          requires:
-            - build
-      - security_tests:
-          requires:
-            - build
-      - compatibility_tests:
-          requires:
-            - build
-      - accessibility_tests:
-          requires:
-            - build
+              only:
+                - /^hotfix\/.*/
 
       - tests:
           requires:
-            - unit_tests
-            - integration_tests
-            - regression_tests
-            - performance_tests
-            - security_tests
-            - compatibility_tests
-            - accessibility_tests
+            - build
 
+      - deploy:
+          name: deploy_hotfix_dev
+          requires:
+            - tests
+          filters:
+            branches:
+              only: develop
+          environment: development
 
+      - deploy:
+          name: deploy_hotfix_prod
+          requires:
+            - tests
+          filters:
+            branches:
+              only: main
+          environment: production
 
   development:
     jobs:
-      - branch_name:
+      - build:
           filters:
             branches:
-              only: develop # Branche principale pour le développement continu
-      # ===========BUILD================ #
-      - install_dependencies:
-          requires:
-            - branch_name
-      - run_linter:
-          requires:
-            - branch_name
-      - clean_and_package:
-          requires:
-            - branch_name
-      - build:
-          requires:
-            - install_dependencies
-            - run_linter
-            - clean_and_package
-
-      # ===========TESTS================ #
-      - unit_tests:
-          requires:
-            - build
-      - integration_tests:
-          requires:
-            - build
-      - regression_tests:
-          requires:
-            - build
-      - performance_tests:
-          requires:
-            - build
-      - security_tests:
-          requires:
-            - build
-      - compatibility_tests:
-          requires:
-            - build
-      - accessibility_tests:
-          requires:
-            - build
-
+              only: develop
       - tests:
           requires:
-            - unit_tests
-            - integration_tests
-            - regression_tests
-            - performance_tests
-            - security_tests
-            - compatibility_tests
-            - accessibility_tests
-
+            - build
+          filters:
+            branches:
+              only: develop
       - deploy:
           name: deploy_dev
           requires:
             - tests
-
-
+          filters:
+            branches:
+              only: develop
+          environment: development
 
   integration:
     jobs:
-      - branch_name:
+      - build:
           filters:
             branches:
-              only: integration # Branche d'intégration servant de serveur de tests
-      # ===========BUILD================ #
-      - install_dependencies:
-          requires:
-            - branch_name
-      - run_linter:
-          requires:
-            - branch_name
-      - clean_and_package:
-          requires:
-            - branch_name
-      - build:
-          requires:
-            - install_dependencies
-            - run_linter
-            - clean_and_package
-
-      # ===========TESTS================ #
-      - unit_tests:
-          requires:
-            - build
-      - integration_tests:
-          requires:
-            - build
-      - regression_tests:
-          requires:
-            - build
-      - performance_tests:
-          requires:
-            - build
-      - security_tests:
-          requires:
-            - build
-      - compatibility_tests:
-          requires:
-            - build
-      - accessibility_tests:
-          requires:
-            - build
-
+              only: integration
       - tests:
           requires:
-            - unit_tests
-            - integration_tests
-            - regression_tests
-            - performance_tests
-            - security_tests
-            - compatibility_tests
-            - accessibility_tests
-
+            - build
       - deploy:
           name: deploy_int
           requires:
             - tests
-
-
-
-  production:
-    # La production exécute tous les jobs, de base ce qui était prévu de faire c'est de ne pas exécuter les tests pour accélérer le déploiement.
-    # Cependant, sur Circle CI, je ne peux pas dire d'exécuter les tests lorsque le merge vient exclusivement d'une branche hotfix, pour respecter le pattern GitFlow.
-    # Donc je me résigne à effectuer les tests sur la branche main. Le mieux, serait de faire un protocole spécifique de tests pour chaque workflow.
-    jobs:
-      - branch_name:
           filters:
             branches:
-              only: main # Déploiement en production sur la branche main
-      # ===========BUILD================ #
-      - install_dependencies:
-          requires:
-            - branch_name
-      - run_linter:
-          requires:
-            - branch_name
-      - clean_and_package:
-          requires:
-            - branch_name
+              only: integration
+          environment: integration
+
+  production: # Not necessary to tests in production because we have already tested in other environments
+    jobs:
       - build:
-          requires:
-            - install_dependencies
-            - run_linter
-            - clean_and_package
-
-      # ===========TESTS================ #
-      - unit_tests:
-          requires:
-            - build
-      - integration_tests:
-          requires:
-            - build
-      - regression_tests:
-          requires:
-            - build
-      - performance_tests:
-          requires:
-            - build
-      - security_tests:
-          requires:
-            - build
-      - compatibility_tests:
-          requires:
-            - build
-      - accessibility_tests:
-          requires:
-            - build
-
+          filters:
+            branches:
+              only: main
       - tests:
           requires:
-            - unit_tests
-            - integration_tests
-            - regression_tests
-            - performance_tests
-            - security_tests
-            - compatibility_tests
-            - accessibility_tests
-
-      # ===========DEPLOY================ #
-      - prepare_environment:
-          environment: production
-          requires:
-            - tests
-      - deploy_application:
-          environment: production
-          requires:
-            - prepare_environment
-      - verification_tests:
-          requires:
-            - deploy_application
-      - functional_validation:
-          requires:
-            - verification_tests
-      - load_tests:
-          requires:
-            - functional_validation
-      - finalize_deployment:
-          environment: production
-          requires:
-            - load_tests
-      - monitoring:
-          environment: production
-          requires:
-            - finalize_deployment
+            - build
       - deploy:
           name: deploy_prod
           requires:
-            - monitoring
+            - tests
+          filters:
+            branches:
+              only: main
+          environment: production
