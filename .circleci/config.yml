@@ -6,7 +6,7 @@ orbs:
 
 jobs:
 # ===========BUILD================ #
-  build:
+  install_dependencies:
     executor: node/default
     steps:
       - checkout
@@ -15,12 +15,33 @@ jobs:
       - run:
           name: Install dependencies
           command: npm install --save
+
+  run_linter:
+    executor: node/default
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
       - run:
           name: Run linter
           command: npm run lint
+
+  clean_and_package:
+    executor: node/default
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
       - run:
           name: Clean and package
           command: echo "Cleaning and packaging..."
+
+  build:
+    executor: node/default
+    steps:
+      - run:
+          name: Orchestrating all build jobs
+          command: echo "Build process completed successfully."
 
 # ===========TESTS================ #
   unit_tests:
@@ -327,10 +348,17 @@ workflows:
     # Donc je me résigne à effectuer les tests sur la branche main. Le mieux, serait de faire un protocole spécifique de tests pour chaque workflow.
     jobs:
     # ===========BUILD================ #
+      - install_dependencies
+      - run_linter
+      - clean_and_package
       - build:
           filters:
             branches:
               only: main # Déploiement en production sur la branche main
+          requires:
+            - install_dependencies
+            - run_linter
+            - clean_and_package
 
       # ===========TESTS================ #
       - unit_tests:
