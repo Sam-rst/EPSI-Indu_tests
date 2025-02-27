@@ -5,7 +5,7 @@ orbs:
   node: circleci/node@5 # Utilisation de l'orbe Node pour simplifier la gestion de l'exécuteur et des dépendances.
 
 jobs:
-  branche_name:
+  branch_name:
     executor: node/default
     steps:
       - checkout
@@ -170,7 +170,7 @@ workflows:
 
   feature:
     jobs:
-      - branche_name:
+      - branch_name:
           filters:
             branches:
               only: /^feature\/.*/ # Les branches feature sont dédiées aux nouvelles fonctionnalités et n'ont donc pas besoin d'être déployées
@@ -226,7 +226,7 @@ workflows:
 
   hotfix:
     jobs:
-      - branche_name:
+      - branch_name:
           filters:
             branches:
               only: /^hotfix\/.*/ # Les branches hotfix permettent des corrections critiques directement en production
@@ -281,7 +281,7 @@ workflows:
 
   development:
     jobs:
-      - branche_name:
+      - branch_name:
           filters:
             branches:
               only: develop # Branche principale pour le développement continu
@@ -342,7 +342,7 @@ workflows:
 
   integration:
     jobs:
-      - branche_name:
+      - branch_name:
           filters:
             branches:
               only: integration # Branche d'intégration servant de serveur de tests
@@ -409,7 +409,7 @@ workflows:
     # Cependant, sur Circle CI, je ne peux pas dire d'exécuter les tests lorsque le merge vient exclusivement d'une branche hotfix, pour respecter le pattern GitFlow.
     # Donc je me résigne à effectuer les tests sur la branche main. Le mieux, serait de faire un protocole spécifique de tests pour chaque workflow.
     jobs:
-      - branche_name:
+      - branch_name:
           filters:
             branches:
               only: main # Déploiement en production sur la branche main
