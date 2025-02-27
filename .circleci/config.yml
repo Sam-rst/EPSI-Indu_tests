@@ -5,6 +5,14 @@ orbs:
   node: circleci/node@5 # Utilisation de l'orbe Node pour simplifier la gestion de l'exécuteur et des dépendances.
 
 jobs:
+  branche_name:
+    executor: node/default
+    steps:
+      - checkout
+      - run:
+          name: Display branch name
+          command: echo "Branch name is $CIRCLE_BRANCH"
+
 # ===========BUILD================ #
   install_dependencies:
     executor: node/default
@@ -162,14 +170,21 @@ workflows:
 
   feature:
     jobs:
-      # ===========BUILD================ #
-      - install_dependencies
-      - run_linter
-      - clean_and_package
-      - build:
+      - branche_name:
           filters:
             branches:
               only: /^feature\/.*/ # Les branches feature sont dédiées aux nouvelles fonctionnalités et n'ont donc pas besoin d'être déployées
+      # ===========BUILD================ #
+      - install_dependencies:
+          requires:
+            - branch_name
+      - run_linter:
+          requires:
+            - branch_name
+      - clean_and_package:
+          requires:
+            - branch_name
+      - build:
           requires:
             - install_dependencies
             - run_linter
@@ -211,14 +226,21 @@ workflows:
 
   hotfix:
     jobs:
-      # ===========BUILD================ #
-      - install_dependencies
-      - run_linter
-      - clean_and_package
-      - build:
+      - branche_name:
           filters:
             branches:
               only: /^hotfix\/.*/ # Les branches hotfix permettent des corrections critiques directement en production
+      # ===========BUILD================ #
+      - install_dependencies:
+          requires:
+            - branch_name
+      - run_linter:
+          requires:
+            - branch_name
+      - clean_and_package:
+          requires:
+            - branch_name
+      - build:
           requires:
             - install_dependencies
             - run_linter
@@ -259,14 +281,21 @@ workflows:
 
   development:
     jobs:
-      # ===========BUILD================ #
-      - install_dependencies
-      - run_linter
-      - clean_and_package
-      - build:
+      - branche_name:
           filters:
             branches:
               only: develop # Branche principale pour le développement continu
+      # ===========BUILD================ #
+      - install_dependencies:
+          requires:
+            - branch_name
+      - run_linter:
+          requires:
+            - branch_name
+      - clean_and_package:
+          requires:
+            - branch_name
+      - build:
           requires:
             - install_dependencies
             - run_linter
@@ -313,14 +342,21 @@ workflows:
 
   integration:
     jobs:
-      # ===========BUILD================ #
-      - install_dependencies
-      - run_linter
-      - clean_and_package
-      - build:
+      - branche_name:
           filters:
             branches:
               only: integration # Branche d'intégration servant de serveur de tests
+      # ===========BUILD================ #
+      - install_dependencies:
+          requires:
+            - branch_name
+      - run_linter:
+          requires:
+            - branch_name
+      - clean_and_package:
+          requires:
+            - branch_name
+      - build:
           requires:
             - install_dependencies
             - run_linter
@@ -373,14 +409,21 @@ workflows:
     # Cependant, sur Circle CI, je ne peux pas dire d'exécuter les tests lorsque le merge vient exclusivement d'une branche hotfix, pour respecter le pattern GitFlow.
     # Donc je me résigne à effectuer les tests sur la branche main. Le mieux, serait de faire un protocole spécifique de tests pour chaque workflow.
     jobs:
-    # ===========BUILD================ #
-      - install_dependencies
-      - run_linter
-      - clean_and_package
-      - build:
+      - branche_name:
           filters:
             branches:
               only: main # Déploiement en production sur la branche main
+      # ===========BUILD================ #
+      - install_dependencies:
+          requires:
+            - branch_name
+      - run_linter:
+          requires:
+            - branch_name
+      - clean_and_package:
+          requires:
+            - branch_name
+      - build:
           requires:
             - install_dependencies
             - run_linter
