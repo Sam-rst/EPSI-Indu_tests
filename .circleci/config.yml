@@ -163,11 +163,17 @@ workflows:
   feature:
     jobs:
       # ===========BUILD================ #
+      - install_dependencies
+      - run_linter
+      - clean_and_package
       - build:
           filters:
             branches:
-              only:
-                - /^feature\/.*/ # Les branches feature sont dédiées aux nouvelles fonctionnalités et n'ont donc pas besoin d'être déployées
+              only: /^feature\/.*/ # Les branches feature sont dédiées aux nouvelles fonctionnalités et n'ont donc pas besoin d'être déployées
+          requires:
+            - install_dependencies
+            - run_linter
+            - clean_and_package
 
       # ===========TESTS================ #
       - unit_tests:
@@ -206,11 +212,17 @@ workflows:
   hotfix:
     jobs:
       # ===========BUILD================ #
+      - install_dependencies
+      - run_linter
+      - clean_and_package
       - build:
           filters:
             branches:
-              only:
-                - /^hotfix\/.*/ # Les branches hotfix permettent des corrections critiques directement en production
+              only: /^hotfix\/.*/ # Les branches hotfix permettent des corrections critiques directement en production
+          requires:
+            - install_dependencies
+            - run_linter
+            - clean_and_package
 
       # ===========TESTS================ #
       - unit_tests:
@@ -248,10 +260,17 @@ workflows:
   development:
     jobs:
       # ===========BUILD================ #
+      - install_dependencies
+      - run_linter
+      - clean_and_package
       - build:
           filters:
             branches:
               only: develop # Branche principale pour le développement continu
+          requires:
+            - install_dependencies
+            - run_linter
+            - clean_and_package
 
       # ===========TESTS================ #
       - unit_tests:
@@ -295,10 +314,17 @@ workflows:
   integration:
     jobs:
       # ===========BUILD================ #
+      - install_dependencies
+      - run_linter
+      - clean_and_package
       - build:
           filters:
             branches:
               only: integration # Branche d'intégration servant de serveur de tests
+          requires:
+            - install_dependencies
+            - run_linter
+            - clean_and_package
 
       # ===========TESTS================ #
       - unit_tests:
