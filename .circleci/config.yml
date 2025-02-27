@@ -1,7 +1,9 @@
 # .circleci/config.yml
 version: 2.1
+
 orbs:
-  node: circleci/node@5
+  node: circleci/node@5 # Utilisation de l'orbe Node pour simplifier la gestion de l'exécuteur et des dépendances.
+
 jobs:
   build:
     executor: node/default
@@ -82,6 +84,28 @@ jobs:
           name: Monitoring and Follow-up
           command: echo "Starting monitoring and follow-up process..."
 
+  should_run_tests:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: Check if last commit is from hotfix
+          command: |
+            # Vérifier si le dernier commit contient un message indiquant un hotfix
+            if git log -1 --pretty=%B | grep -i "hotfix"; then
+              echo "Hotfix detected, running tests..."
+              echo "export CIRCLE_TESTS_NEEDED=true" >> $BASH_ENV
+            else
+              echo "No hotfix detected, skipping tests."
+              echo "export CIRCLE_TESTS_NEEDED=false" >> $BASH_ENV
+            fi
+      - run:
+          name: Set Pipeline Parameter
+          command: echo "Pipeline parameter -> run_tests=$(echo $CIRCLE_TESTS_NEEDED)"
+
+
+
 workflows:
   version: 2
 
@@ -91,15 +115,14 @@ workflows:
           filters:
             branches:
               only:
-                - /^feature\/.*/
-
+                - /^feature\/.*/ # Les branches feature sont dédiées aux nouvelles fonctionnalités et n'ont donc pas besoin d'être déployées
       - tests:
           requires:
             - build
           filters:
             branches:
               only:
-                - /^feature\/.*/
+                - /^feature\/.*/ # On exécute les tests pour s’assurer que chaque feature est stable avant fusion sur la branche develop
 
   hotfix:
     jobs:
@@ -107,28 +130,27 @@ workflows:
           filters:
             branches:
               only:
-                - /^hotfix\/.*/
-
+                - /^hotfix\/.*/ # Les branches hotfix permettent des corrections critiques directement en production
       - tests:
           requires:
             - build
           filters:
             branches:
               only:
-                - /^hotfix\/.*/
+                - /^hotfix\/.*/ # On exécute les tests pour garantir la fiabilité des correctifs avant la fusion sur la branche main
 
   development:
     jobs:
       - build:
           filters:
             branches:
-              only: develop
+              only: develop # Branche principale pour le développement continu
       - tests:
           requires:
             - build
           filters:
             branches:
-              only: develop
+              only: develop # On exécute les tests sur la branche de développement
       - deploy:
           name: deploy_dev
           requires:
@@ -136,17 +158,17 @@ workflows:
           filters:
             branches:
               only: develop
-          environment: development
+          environment: development # Déploiement sur un environnement de dev après validation
 
   integration:
     jobs:
       - build:
           filters:
             branches:
-              only: integration
+              only: integration # Branche d'intégration servant de serveur de tests
       - tests:
           requires:
-            - build
+            - build # On exécute des tests complets sur l'environnement d'intégration
       - deploy:
           name: deploy_int
           requires:
@@ -154,18 +176,35 @@ workflows:
           filters:
             branches:
               only: integration
-          environment: integration
+          environment: integration # Déploiement dans l’environnement d’intégration pour validation finale
 
-  production: # Not necessary to tests in production because we have already tested in other environments
+  production:
     jobs:
       - build:
           filters:
             branches:
               only: main
+
+      - should_run_tests:
+          requires:
+            - build
+          filters:
+            branches:
+              only: main
+
+      - tests:
+          requires:
+            - should_run_tests
+          filters:
+            branches:
+              only: main
+          condition: <<pipeline.parameters.run_tests>> # Exécuter seulement si le hotfix est détecté
+
       - deploy:
           name: deploy_prod
           requires:
             - build
+            - tests
           filters:
             branches:
               only: main
