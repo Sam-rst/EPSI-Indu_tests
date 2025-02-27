@@ -1,19 +1,8 @@
 # .circleci/config.yml
 version: 2.1
 
-
-
 orbs:
   node: circleci/node@5 # Utilisation de l'orbe Node pour simplifier la gestion de l'exécuteur et des dépendances.
-
-
-
-parameters:
-  run_tests:
-    type: boolean
-    default: false # Par défaut, on n'exécute pas les tests en production
-
-
 
 jobs:
   build:
@@ -95,28 +84,6 @@ jobs:
           name: Monitoring and Follow-up
           command: echo "Starting monitoring and follow-up process..."
 
-  should_run_tests:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - checkout
-      - run:
-          name: Check if last commit is from hotfix
-          command: |
-            # Vérifier si le dernier commit contient un message indiquant un hotfix
-            if git log -1 --pretty=%B | grep -i "hotfix"; then
-              echo "Hotfix detected, running tests..."
-              echo "export CIRCLE_TESTS_NEEDED=true" >> $BASH_ENV
-            else
-              echo "No hotfix detected, skipping tests."
-              echo "export CIRCLE_TESTS_NEEDED=false" >> $BASH_ENV
-            fi
-      - run:
-          name: Set Pipeline Parameter
-          command: echo "Pipeline parameter -> run_tests=$(echo $CIRCLE_TESTS_NEEDED)"
-
-
-
 workflows:
   version: 2
 
@@ -190,33 +157,22 @@ workflows:
           environment: integration # Déploiement dans l’environnement d’intégration pour validation finale
 
   production:
+    # La production exécute tous les jobs, de base ce qui était prévu de faire c'est de ne pas exécuter les tests pour accélérer le déploiement.
+    # Cependant, sur Circle CI, je ne peux pas dire d'exécuter les tests lorsque le merge vient exclusivement d'une branche hotfix, pour respecter le pattern GitFlow.
+    # Donc je me résigne à effectuer les tests sur la branche main. Le mieux, serait de faire un protocole spécifique de tests pour chaque workflow.
     jobs:
       - build:
           filters:
             branches:
-              only: main
-
-      - should_run_tests:
-          requires:
-            - build
-          filters:
-            branches:
-              only: main
-
+              only: main # Déploiement en production sur la branche main
       - tests:
           requires:
-            - should_run_tests
-          filters:
-            branches:
-              only: main
-          condition: <<pipeline.parameters.run_tests>> # Exécuter seulement si le hotfix est détecté
-
+            - build # On exécute des tests complets sur l'environnement de production
       - deploy:
           name: deploy_prod
           requires:
-            - build
-            - tests
+            - build # Directement après la construction, on déploie
           filters:
             branches:
               only: main
-          environment: production
+          environment: production # Déploiement final sans tests pour optimiser la mise en production
