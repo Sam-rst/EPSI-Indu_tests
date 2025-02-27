@@ -109,24 +109,6 @@ workflows:
           requires:
             - build
 
-      - deploy:
-          name: deploy_hotfix_dev
-          requires:
-            - tests
-          filters:
-            branches:
-              only: develop
-          environment: development
-
-      - deploy:
-          name: deploy_hotfix_prod
-          requires:
-            - tests
-          filters:
-            branches:
-              only: main
-          environment: production
-
   development:
     jobs:
       - build:
