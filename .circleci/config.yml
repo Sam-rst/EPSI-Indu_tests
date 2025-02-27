@@ -136,7 +136,7 @@ jobs:
 
 
 # ===========DEPLOY================ #
-  deploy:
+  prepare_environment:
     parameters:
       environment:
         type: string
@@ -146,24 +146,70 @@ jobs:
       - run:
           name: Prepare Deployment Environment
           command: echo "Preparing deployment for <<parameters.environment>>..."
+
+  deploy_application:
+    parameters:
+      environment:
+        type: string
+    executor: node/default
+    steps:
+      - checkout
       - run:
           name: Deploy Application
           command: echo "Deploying application to <<parameters.environment>> environment..."
+
+  verification_tests:
+    executor: node/default
+    steps:
+      - checkout
       - run:
           name: Run Verification Tests
           command: echo "Running verification tests..."
+
+  functional_validation:
+    executor: node/default
+    steps:
+      - checkout
       - run:
           name: Run Functional Validation Tests
           command: echo "Running functional validation tests..."
+
+  load_tests:
+    executor: node/default
+    steps:
+      - checkout
       - run:
           name: Run Load Tests
           command: echo "Running load tests..."
+
+  finalize_deployment:
+    parameters:
+      environment:
+        type: string
+    executor: node/default
+    steps:
+      - checkout
       - run:
           name: Final Deployment Step
           command: echo "Finalizing deployment to <<parameters.environment>>..."
+
+  monitoring:
+    parameters:
+      environment:
+        type: string
+    executor: node/default
+    steps:
+      - checkout
       - run:
           name: Monitoring and Follow-up
           command: echo "Starting monitoring and follow-up process..."
+
+  deploy:
+    executor: node/default
+    steps:
+      - run:
+          name: Orchestrating all deployment jobs
+          command: echo "Deployment process completed successfully."
 
 workflows:
   version: 2
@@ -279,6 +325,8 @@ workflows:
             - compatibility_tests
             - accessibility_tests
 
+
+
   development:
     jobs:
       - branch_name:
@@ -339,6 +387,8 @@ workflows:
           requires:
             - tests
           environment: development # Déploiement sur un environnement de dev après validation
+
+
 
   integration:
     jobs:
@@ -404,6 +454,8 @@ workflows:
               only: integration
           environment: integration # Déploiement dans l’environnement d’intégration pour validation finale
 
+
+
   production:
     # La production exécute tous les jobs, de base ce qui était prévu de faire c'est de ne pas exécuter les tests pour accélérer le déploiement.
     # Cependant, sur Circle CI, je ne peux pas dire d'exécuter les tests lorsque le merge vient exclusivement d'une branche hotfix, pour respecter le pattern GitFlow.
@@ -462,8 +514,36 @@ workflows:
             - compatibility_tests
             - accessibility_tests
 
+      # ===========DEPLOY================ #
+      - prepare_environment:
+          requires:
+            - tests
+      - deploy_application:
+          requires:
+            - prepare_environment
+      - verification_tests:
+          requires:
+            - deploy_application
+      - functional_validation:
+          requires:
+            - verification_tests
+      - load_tests:
+          requires:
+            - functional_validation
+      - finalize_deployment:
+          requires:
+            - load_tests
+      - monitoring:
+          requires:
+            - finalize_deployment
       - deploy:
           name: deploy_prod
           requires:
-            - tests # Directement après la construction, on déploie
-          environment: production # Déploiement final sans tests pour optimiser la mise en production
+            - prepare_environment
+            - deploy_application
+            - verification_tests
+            - functional_validation
+            - load_tests
+            - finalize_deployment
+            - monitoring
+          environment: production
