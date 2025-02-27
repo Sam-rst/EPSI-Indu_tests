@@ -1,8 +1,19 @@
 # .circleci/config.yml
 version: 2.1
 
+
+
 orbs:
   node: circleci/node@5 # Utilisation de l'orbe Node pour simplifier la gestion de l'exécuteur et des dépendances.
+
+
+
+parameters:
+  run_tests:
+    type: boolean
+    default: false # Par défaut, on n'exécute pas les tests en production
+
+
 
 jobs:
   build:
