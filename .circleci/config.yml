@@ -511,9 +511,11 @@ workflows:
 
       # ===========DEPLOY================ #
       - prepare_environment:
+          environment: production
           requires:
             - tests
       - deploy_application:
+          environment: production
           requires:
             - prepare_environment
       - verification_tests:
@@ -526,9 +528,11 @@ workflows:
           requires:
             - functional_validation
       - finalize_deployment:
+          environment: production
           requires:
             - load_tests
       - monitoring:
+          environment: production
           requires:
             - finalize_deployment
       - deploy:
@@ -541,4 +545,3 @@ workflows:
             - load_tests
             - finalize_deployment
             - monitoring
-          environment: production
