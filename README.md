@@ -62,7 +62,7 @@ docker compose down
 
 ## Documentation
 
-### GitFlow
+### CircleCI - GitFlow
 
 #### Branches
 
@@ -111,3 +111,9 @@ La config développée en premier ([config.old.yml](.circleci/config.old.yml)) p
 La config effectuée en second ([config.yml](.circleci/config.yml)) permet de faire une pipeline plus lisible et plus facile à maintenir. Cependant, elle demande plus de requires entre chaque étape de chaque workflow, qui sont regroupées dans un seul job avec différentes étapes. Ce qui équivaut à 2m45s de CI (300% de temps en plus en général).
 ![Config_production](docs/img/config_production.png)
 ![Config_production](docs/img/temps_config2.png)
+
+### CD Versel
+
+Le déploiement de l'application se fait sur versel qui est directement connecté à mon repository github. A chaque push sur la branche main, develop et integration l'application est déployée sur versel.
+
+Serveur de production : <https://epsi-indu-tests.vercel.app/>
