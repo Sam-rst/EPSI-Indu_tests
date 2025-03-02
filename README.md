@@ -114,12 +114,12 @@ Les workflows CircleCI exécutent automatiquement des tests et déploiements en 
   ![Workflow_feat](docs/img/feature_pipeline.png)
 
 - **Branches `hotfix/*` (Corrections urgentes) :**
-  - Build et tests pour assurer la stabilité
+  - Build et tests pour assurer la stabilité des correctifs, car ces branches demanderont de merge sur main et develop une fois terminées.
 
   ![Workflow_hotfix](docs/img/hotfix_pipeline.png)
 
 - **Branches non reconnues (Par défault):**
-  - Un workflow par défaut est exécuté pour assurer un contrôle minimal
+  - Un workflow par défaut est exécuté pour assurer un contrôle minimal lorsqu'une branche n'est pas reconnue ou mal nommée
 
   ![Workflow_undefined](docs/img/undefined_pipeline.png)
 
