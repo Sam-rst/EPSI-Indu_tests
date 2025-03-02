@@ -1,39 +1,45 @@
-# .circleci/config.yml
+# Configuration CircleCI
 version: 2.1
+
+# Utilisation de l'orb officiel Node.js pour simplifier la configuration
 orbs:
   node: circleci/node@5
+
+# Définition des jobs
 jobs:
   build:
-    executor: node/default
+    executor: node/default  # Utilisation de l'exécuteur par défaut pour Node.js
     steps:
-      - checkout
+      - checkout  # Récupération du code source
       - node/install-packages:
-          pkg-manager: npm
+          pkg-manager: npm  # Installation des dépendances avec npm
       - run:
           name: Install dependencies
-          command: npm install --save
+          command: npm install --save  # Installation manuelle des dépendances
       - run:
           name: Run linter
-          command: npm run lint
+          command: npm run lint  # Exécution de l'analyse statique du code
       - run:
           name: Clean and package
-          command: echo "Cleaning and packaging..."
+          command: echo "Cleaning and packaging..."  # Étape placeholder pour le packaging
 
   tests:
     executor: node/default
     environment:
-      JEST_JUNIT_OUTPUT_DIR: ./test-results/
+      JEST_JUNIT_OUTPUT_DIR: ./test-results/  # Définition du répertoire de sortie des résultats de test
     steps:
-      - checkout
+      - checkout  # Récupération du code source
       - node/install-packages:
-          pkg-manager: npm
+          pkg-manager: npm  # Installation des dépendances avec npm
       - run:
-          command: npm install jest-junit
+          command: npm install jest-junit  # Installation du package Jest JUnit pour les rapports de test
       - run:
           name: Run unit tests
-          command: npm run test:ci
+          command: npm run test:ci  # Exécution des tests unitaires en mode CI
       - store_test_results:
-          path: ./test-results/
+          path: ./test-results/  # Sauvegarde des résultats de test
+      
+      # Différents types de tests à exécuter
       - run:
           name: Run integration tests
           command: echo "Running integration tests..."
@@ -56,10 +62,10 @@ jobs:
   deploy:
     parameters:
       environment:
-        type: string
+        type: string  # Définition de l'environnement cible du déploiement (dev, integration, prod...)
     executor: node/default
     steps:
-      - checkout
+      - checkout  # Récupération du code source
       - run:
           name: Prepare Deployment Environment
           command: echo "Preparing deployment for <<parameters.environment>>..."
@@ -82,57 +88,38 @@ jobs:
           name: Monitoring and Follow-up
           command: echo "Starting monitoring and follow-up process..."
 
+# Définition des workflows
 workflows:
   version: 2
 
-  feature:
+  feature: # Pas besoin de déploiement pour les branches feature
     jobs:
       - build:
           filters:
             branches:
               only:
-                - /^feature\/.*
-
+                - /^feature\/.*/  # Déclenchement du build uniquement pour les branches feature
       - tests:
           requires:
-            - build
+            - build  # Exécution des tests après la compilation
 
-  hotfix:
+  hotfix: # Pas besoin de déploiement pour les branches hotfix
     jobs:
       - build:
           filters:
             branches:
               only:
-                - /^hotfix\/.*/
-
+                - /^hotfix\/.*/  # Déclenchement du build uniquement pour les branches hotfix
       - tests:
           requires:
             - build
 
-      - deploy:
-          name: deploy_hotfix_dev
-          requires:
-            - tests
-          filters:
-            branches:
-              only: develop
-          environment: development
-
-      - deploy:
-          name: deploy_hotfix_prod
-          requires:
-            - tests
-          filters:
-            branches:
-              only: main
-          environment: production
-
-  development:
+  development: # Besoin d'un déploiement sur vercel pour la branche develop
     jobs:
       - build:
           filters:
             branches:
-              only: develop
+              only: develop  # Déclenchement du build uniquement sur la branche develop
       - tests:
           requires:
             - build
@@ -142,18 +129,15 @@ workflows:
       - deploy:
           name: deploy_dev
           requires:
-            - tests
-          filters:
-            branches:
-              only: develop
+            - tests  # Déploiement en dev après la réussite des tests
           environment: development
 
-  integration:
+  integration: # Besoin d'un déploiement pour la branche integration
     jobs:
       - build:
           filters:
             branches:
-              only: integration
+              only: integration  # Déclenchement du build uniquement sur la branche integration
       - tests:
           requires:
             - build
@@ -161,25 +145,19 @@ workflows:
           name: deploy_int
           requires:
             - tests
-          filters:
-            branches:
-              only: integration
           environment: integration
 
-  production: # Not necessary to tests in production because we have already tested in other environments
+  production: # Besoin d'un déploiement pour la branche main
     jobs:
       - build:
           filters:
             branches:
-              only: main
+              only: main  # Déclenchement du build uniquement sur la branche principale
       - tests:
           requires:
             - build
       - deploy:
           name: deploy_prod
           requires:
-            - tests
-          filters:
-            branches:
-              only: main
+            - tests  # Déploiement en production après validation des tests
           environment: production

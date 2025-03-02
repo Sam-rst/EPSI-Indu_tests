@@ -74,12 +74,12 @@ docker compose down
 
 #### Main (Workflow)
 
-- Première version
+- Première version ([config.yml](.circleci/config.yml))
 
-Les branches main, develop et integration sont protégées. Les pull requests sont obligatoires pour merger une branche dans une autre. Les tests sont lancés à chaque push sur les branches main, develop et integration. Donc possède le même workflow.
+Les branches main, develop et integration sont protégées dans les config github. Les pull requests sont obligatoires pour merger une branche dans une autre. Les tests sont lancés à chaque push/merge sur les branches main, develop et integration. Donc possède le même workflow, bien entendu cela pourra évoluer selon les besoins du client.
 ![Config_production_old](docs/img/prod_pipeline.png)
 
-- Seconde version
+- Seconde version ([config.old.yml](.circleci/config.old.yml))
 
 ![Config_production](docs/img/config_production.png)
 
@@ -103,12 +103,12 @@ Les branches main, develop et integration sont protégées. Les pull requests so
 
 #### 1ère configuration
 
-La config développée en premier ([config.old.yml](.circleci/config.old.yml)) permettait de faire une pipeline optimisée car demande moins de requires entre chaque étape de chaque workflow, qui sont regroupées dans un seul job avec différentes étapes. Ce qui équivaut à 45s de CI.
+La config développée en première ([config.yml](.circleci/config.yml)) permettait de faire une pipeline optimisée car ne demande au maximum que 3 jobs pour chaque workflow, chaque job possède plusieurs étapes, ce qui améliore drastiquement la vitesse de CI/CD. Ce qui équivaut à 45s de CI en moyenne.
 ![Config_production_old](docs/img/config_production_old.png)
 
 #### 2nd configuration
 
-La config effectuée en second ([config.yml](.circleci/config.yml)) permet de faire une pipeline plus lisible et plus facile à maintenir. Cependant, elle demande plus de requires entre chaque étape de chaque workflow, qui sont regroupées dans un seul job avec différentes étapes. Ce qui équivaut à 2m45s de CI (300% de temps en plus en général).
+La config effectuée en second ([config.old.yml](.circleci/config.old.yml)) permet de faire une pipeline plus lisible. Cependant, elle demande beaucoup plus de jobs, qui sont chacun reliés entre eux via des requires, mais cela augmente drastiquement le temps de CI/CD. Ce qui équivaut à 2m45s de CI (300% de temps en plus en moyenne).
 ![Config_production](docs/img/config_production.png)
 ![Config_production](docs/img/temps_config2.png)
 
