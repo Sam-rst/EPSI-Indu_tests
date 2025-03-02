@@ -1,18 +1,26 @@
 # Next.js + Jest
 
-This example shows how to configure Jest to work with Next.js.
+## Introduction
 
-This includes Next.js' built-in support for Global CSS, CSS Modules and TypeScript. This example also shows how to use Jest with the App Router and React Server Components.
+Ce projet démontre comment configurer Jest pour fonctionner avec Next.js. Il inclut la prise en charge intégrée de Next.js pour le CSS global, les modules CSS et TypeScript, ainsi que la compatibilité avec l'App Router et les React Server Components.
 
-> **Note:** Since tests can be co-located alongside other files inside the App Router, we have placed those tests in `app/` to demonstrate this behavior (which is different than `pages/`). You can still place all tests in `__tests__` if you prefer.
+> **Note :** Les tests étant souvent placés à côté des fichiers de l'App Router, ceux-ci sont situés dans le dossier `app/` pour illustrer cette approche (différente de `pages/`). Cependant, vous pouvez toujours organiser vos tests dans `__tests__/` selon vos préférences.
 
-## Deploy your own
+---
+
+## Déploiement
+
+Déployez facilement votre propre version de ce projet avec Vercel :
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/vercel/next.js/tree/canary/examples/with-jest&project-name=with-jest&repository-name=with-jest)
 
-## How to Use
+---
 
-Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [npm](https://docs.npmjs.com/cli/init), [Yarn](https://yarnpkg.com/lang/en/docs/cli/create/), or [pnpm](https://pnpm.io) to bootstrap the example:
+## Installation et utilisation
+
+### Cloner et initialiser le projet
+
+Exécutez `create-next-app` avec npm, Yarn ou pnpm pour démarrer le projet :
 
 ```bash
 npx create-next-app --example with-jest with-jest-app
@@ -26,100 +34,130 @@ yarn create next-app --example with-jest with-jest-app
 pnpm create next-app --example with-jest with-jest-app
 ```
 
-## Running Tests
+### Exécution des tests
+
+Lancez les tests avec la commande :
 
 ```bash
 npm test
 ```
 
-## Docker Support
+---
 
-### Using Docker Compose
+## Support Docker
 
-To run the application in development mode with hot reload:
+Le projet prend en charge Docker pour simplifier l'exécution en environnement isolé.
 
-```bash
-docker compose up app
-```
+### Utilisation de Docker Compose
 
-To run the tests:
+- **Mode développement (hot reload activé) :**
+  ```bash
+  docker compose up app
+  ```
 
-```bash
-docker compose run test
-```
+- **Exécuter les tests :**
+  ```bash
+  docker compose run test
+  ```
 
-To run in production mode:
+- **Mode production :**
+  ```bash
+  docker compose up prod
+  ```
 
-```bash
-docker compose up prod
-```
+- **Arrêter tous les conteneurs :**
+  ```bash
+  docker compose down
+  ```
 
-To stop all containers:
+---
 
-```bash
-docker compose down
-```
+## Intégration et déploiement continu (CI/CD)
 
-## Documentation
+### **CircleCI et GitFlow**
 
-### CircleCI - GitFlow
+Le projet suit une approche **GitFlow** avec différentes branches pour organiser le développement et les déploiements.
 
-#### Branches
+#### **Branches principales :**
 
-- `main` : branche principale du projet
-- `integration` : branche d'intégration (ou de tests)
-- `develop` : branche de développement
-- `feature/` : branche de fonctionnalité
-- `hotfix/` : branche de correction de bug
+- `main` : Branche de production
+- `integration` : Branche dédiée aux tests d'intégration
+- `develop` : Branche principale de développement
+- `feature/*` : Branches pour le développement de nouvelles fonctionnalités
+- `hotfix/*` : Branches pour les corrections de bugs critiques
 
-#### Main (Workflow)
+#### **Workflows CI/CD :**
 
-- Première version ([config.yml](.circleci/config.yml))
+Les workflows CircleCI exécutent automatiquement des tests et déploiements en fonction de la branche ciblée.
 
-Les branches main, develop et integration sont protégées dans les config github. Les pull requests sont obligatoires pour merger une branche dans une autre. Les tests sont lancés à chaque push/merge sur les branches main, develop et integration. Donc possède le même workflow, bien entendu cela pourra évoluer selon les besoins du client.
-![Config_production_old](docs/img/prod_pipeline.png)
+- **Branche `main` (Production) :**
+  - Build et exécution des tests
+  - Déploiement automatique sur l'environnement de production
 
-- Seconde version ([config.old.yml](.circleci/config.old.yml))
+  ![Config_production](docs/img/config_production.png)
 
-![Config_production](docs/img/config_production.png)
+- **Branche `integration` (Tests) :**
+  - Build et tests
+  - Déploiement automatique sur l'environnement de test
 
-#### Integration (Workflow)
+  ![Workflow_int](docs/img/integration_pipeline.png)
 
-![Workflow_int](docs/img/integration_pipeline.png)
+- **Branche `develop` (Développement) :**
+  - Build et tests
+  - Déploiement automatique en environnement de développement
 
-#### Développement (Workflow)
+  ![Workflow_dev](docs/img/develop_pipeline.png)
 
-![Workflow_dev](docs/img/develop_pipeline.png)
+- **Branches `feature/*` (Fonctionnalités) :**
+  - Build et tests sur les nouvelles fonctionnalités
 
-#### Feature (Workflow)
+  ![Workflow_feat](docs/img/feature_pipeline.png)
 
-![Workflow_feat](docs/img/feature_pipeline.png)
+- **Branches `hotfix/*` (Corrections urgentes) :**
+  - Build et tests pour assurer la stabilité
 
-#### Hotfix (Workflow)
+  ![Workflow_hotfix](docs/img/hotfix_pipeline.png)
 
-![Workflow_hotfix](docs/img/hotfix_pipeline.png)
+- **Branches non reconnues (Par défault):**
+  - Un workflow par défaut est exécuté pour assurer un contrôle minimal
 
-#### Branches undefined
+  ![Workflow_undefined](docs/img/undefined_pipeline.png)
 
-Pour les branches non reconnues par les workflows, un workflow par défaut est lancé. Cela permet de ne pas laisser une branche sans build ni tests.
+---
 
-![Workflow_undefined](docs/img/undefined_pipeline.png)
+## **Analyses de performance des pipelines CI/CD**
 
-### Analyses de performance
+Deux configurations CircleCI ont été testées pour optimiser le pipeline CI/CD.
 
-#### 1ère configuration
+#### **1ère configuration** ([config.yml](.circleci/config.yml))
+- Optimisée avec **3 jobs par workflow**, chaque job contenant plusieurs étapes
+- **Durée moyenne de CI/CD :** 45 secondes
+- Meilleure vitesse grâce à la réduction du nombre de jobs
 
-La config développée en première ([config.yml](.circleci/config.yml)) permettait de faire une pipeline optimisée car ne demande au maximum que 3 jobs pour chaque workflow, chaque job possède plusieurs étapes, ce qui améliore drastiquement la vitesse de CI/CD. Ce qui équivaut à 45s de CI en moyenne.
-![Config_production_old](docs/img/config_production_old.png)
+  ![Config_production](docs/img/config_production.png)
 
-#### 2nd configuration
+#### **2nde configuration** ([config.old.yml](.circleci/config.old.yml))
+- Plus lisible mais avec **plus de jobs et de dépendances**
+- **Durée moyenne de CI/CD :** 2 minutes 45 secondes (**300% plus long que la première version**)
 
-La config effectuée en second ([config.old.yml](.circleci/config.old.yml)) permet de faire une pipeline plus lisible. Cependant, elle demande beaucoup plus de jobs, qui sont chacun reliés entre eux via des requires, mais cela augmente drastiquement le temps de CI/CD. Ce qui équivaut à 2m45s de CI (300% de temps en plus en moyenne).
-![Config_production](docs/img/config_production.png)
-![Config_production](docs/img/temps_config2.png)
+  ![Config_production_old](docs/img/config_production_old.png)
+  ![Temps_config2](docs/img/temps_config2.png)
 
-### CD Versel
+---
 
-Le déploiement de l'application se fait sur versel qui est directement connecté à mon repository github. A chaque push sur la branche main, develop et integration l'application est déployée sur versel.
+## Déploiement avec Vercel
 
-Serveur de production : <https://epsi-indu-tests.vercel.app/>
+L’application est déployée automatiquement sur **Vercel**, synchronisée avec le repository GitHub.
+
+- **Branches déclenchant un déploiement :** `main`, `develop`, `integration`
+- Déploiement automatique à chaque push sur ces branches
+
+🔗 **Serveur de production :** <https://epsi-indu-tests.vercel.app/>
+
+---
+
+## Conclusion
+
+Ce projet combine **Next.js, Jest et Docker**, avec une **intégration CircleCI optimisée** pour un pipeline rapide et efficace. Il assure un déploiement automatique grâce à **Vercel** et suit une gestion des branches structurée via **GitFlow**.
+
+Des optimisations futures peuvent être envisagées pour **réduire le temps de CI/CD** et améliorer **l'évolutivité du pipeline**.
