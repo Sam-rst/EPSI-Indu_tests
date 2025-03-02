@@ -99,6 +99,12 @@ Les branches main, develop et integration sont protégées dans les config githu
 
 ![Workflow_hotfix](docs/img/hotfix_pipeline.png)
 
+#### Branches undefined
+
+Pour les branches non reconnues par les workflows, un workflow par défaut est lancé. Cela permet de ne pas laisser une branche sans build ni tests.
+
+![Workflow_undefined](docs/img/undefined_pipeline.png)
+
 ### Analyses de performance
 
 #### 1ère configuration

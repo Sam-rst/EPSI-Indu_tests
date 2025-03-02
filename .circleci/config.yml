@@ -92,6 +92,21 @@ jobs:
 workflows:
   version: 2
 
+  undefined: # Pour les branches créees ne respectant pas le pattern Gitflow, on effectue exactement le même traitement que pour les branches feature
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore:
+                - /^feature\/.*/
+                - /^hotfix\/.*/
+                - develop
+                - integration
+                - main
+      - tests:
+          requires:
+            - build
+
   feature: # Pas besoin de déploiement pour les branches feature
     jobs:
       - build:
