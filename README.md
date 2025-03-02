@@ -152,6 +152,8 @@ L’application est déployée automatiquement sur **Vercel**, synchronisée ave
 - **Branches déclenchant un déploiement :** `main`, `develop`, `integration`
 - Déploiement automatique à chaque push sur ces branches
 
+![Vercel_prod](docs/img/vercel_prod.png)
+
 🔗 **Serveur de production :** <https://epsi-indu-tests.vercel.app/>
 
 ---
